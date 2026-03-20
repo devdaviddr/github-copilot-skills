@@ -1,6 +1,4 @@
-Here is the improved README:
 
-```markdown
 # GitHub Copilot Skills
 
 A learning repository of GitHub Copilot skill definitions — composable, prompt-driven agents that run inside VS Code to automate repeatable workflows like day planning, scheduling, and productivity tracking.
