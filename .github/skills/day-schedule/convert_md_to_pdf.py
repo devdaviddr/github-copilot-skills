@@ -31,7 +31,8 @@ def md_to_pdf(input_path: pathlib.Path, output_path: pathlib.Path) -> None:
         th { background: #f0f0f0; }
     ''')
 
-    doc = weasyprint.HTML(string=html, base_url=input_path.parent.as_uri())
+    base_uri = input_path.resolve().parent.as_uri()
+    doc = weasyprint.HTML(string=html, base_url=base_uri)
     doc.write_pdf(str(output_path), stylesheets=[css])
 
 
