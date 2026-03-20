@@ -65,6 +65,7 @@ schedules/
 | Skill | File | Description |
 |-------|------|-------------|
 | `day-schedule-planner` | `.github/skills/day-schedule-planner.md` | Plan a full day with hourly blocks, priorities, nutrition, and mid-day check-ins |
+| `get-weather` | `.github/skills/forecast/skill.md` | Get the current weather for a given location (defaults to Melbourne), via `weather.sh` |
 
 ---
 
