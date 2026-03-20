@@ -69,11 +69,6 @@ When a user asks to plan their day, follow this flow:
      * `schedules/YYYY-MM-DD/meal-plan_HHMM-SS.md` (only when nutrition tracking is active)
    - ensure the directory exists or create it
    - include all markdown content generated above in the schedule file and detailed meal plan in the meal-plan file
-   - after files are saved, run the markdown-to-PDF converter script:
-     * `python .github/skills/day-schedule/convert_md_to_pdf.py <input-md> <output-pdf>`
-     * write PDFs to `schedules/YYYY-MM-DD/` with matching names:
-       - `schedule_HHMM-SS.pdf`
-       - `meal-plan_HHMM-SS.pdf`
 
 7. Include a mid-day reschedule workflow:
    - after creating the schedule, ask: "Would you like to check in mid-day for a reschedule or updates?"
