@@ -1,4 +1,3 @@
-Here is the improved README:
 
 # Day Schedule Planner — GitHub Copilot Skill
 
