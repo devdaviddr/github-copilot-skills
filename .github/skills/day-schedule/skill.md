@@ -10,68 +10,91 @@ When a user asks to plan their day, follow this flow:
    - start time (wake-up time or first available hour)
    - end time (bedtime or last working hour)
    - list of tasks with rough duration estimates (minutes/hours), priorities, and deadlines
-   - task categories (work, personal, exercise, breaks, etc.) if the user provides them
+     * flag any task as **fixed** (cannot be moved) by marking it `[fixed]`
+   - task categories (work, personal, exercise, breaks, etc.) — ask proactively if the user has more than 5 tasks and hasn't provided them
    - preferred scheduling style (back-to-back, time-buffered, block scheduling, Pomodoro, etc.)
+
 2. If any required info is missing, ask concise follow-up questions until complete.
 
-3. Build a structured schedule:
+3. Before building the schedule, check for conflicts:
+   - if the total estimated task duration exceeds the available time window, flag this to the user and ask which tasks to defer, shorten, or drop before proceeding.
+
+4. Build a structured schedule:
    - use hourly or half-hour slots depending on task lengths
    - include a brief summary for each slot (task name + estimated duration + priority)
-   - allocate breaks and transitions automatically (typically 5~15 minutes per 2 hours of focused work)
+   - allocate breaks and transitions automatically (typically 5–15 minutes per 2 hours of focused work)
+   - warn if any block of focused work exceeds 3 consecutive hours
    - keep high-priority tasks early if the user has a most important task (MIT)
+   - never move `[fixed]` tasks — schedule all other tasks around them
    - include a daily theme or focus block if the user has one
    - include meal planning when user requests it (or for health/fitness-focused users):
      * breakfast, lunch, dinner, and two snack occasions
      * emphasize protein + complex carbs + vegetables for gym recovery and sustained energy
-     * include portion guidance and timing aligned with workout blocks
+     * include portion guidance and timing aligned with workout blocks (e.g., "30 min pre-workout", "within 45 min post-lift")
      * allow substitutes for dietary restrictions or preferences
 
-4. Output the full schedule in Markdown only (no extra prose or non-markdown data structures):
+5. Output the full schedule in Markdown only (no extra prose or non-markdown data structures):
 
    - heading: `# Daily Schedule for YYYY-MM-DD`
-   - section: `## Overview` with time range and top 3 priorities
+   - section: `## Overview` with time range, timezone, and top 3 priorities
    - section: `## Task List` with a bullet list of tasks and details
-   - section: `## Hourly Plan` with a markdown table:
+   - section: `## Hourly Plan` with a markdown table.
+     * include `Meal` and `Meal detail` columns only when nutrition tracking is active:
 
-     | Time | Task | Duration | Notes | Meal | Meal detail |
+     | Time | Task | Duration | Notes |
+     |------|------|----------|-------|
+     | 08:00 - 09:00 | [Task name] | 1h | [priority / notes] |
+
+     With nutrition tracking active:
+
+     | Time | Task | Duration | Notes | Meal | Meal Detail |
      |------|------|----------|-------|------|-------------|
-     | 08:00 - 09:00 | [Task name] | 1h | [priority] | [breakfast] | [protein, carbs, notes] |
+     | 08:00 - 09:00 | [Task name] | 1h | [priority] | Breakfast | [protein, carbs, notes] |
 
-   - section: `## Nutrition Plan` with a separate table:
+   - section: `## Nutrition Plan` (only when nutrition tracking is active):
 
      | Meal | Time | Menu | Protein | Carbs | Fiber | Notes |
      |------|------|------|---------|-------|-------|-------|
-     | Breakfast | 08:15 | omelet + oats | 35g | 45g | 10g | high-protein energy start |
+     | Breakfast | 08:15 | omelet + oats | 35g | 45g | 10g | 30 min pre-workout |
 
-   - section: `## Notes` containing any adjustment suggestions (e.g., move low-priority to afternoon)
+   - section: `## Notes` — use this section for:
+     * scheduling conflicts or deferred tasks
+     * energy-management warnings (e.g., back-to-back deep work exceeding 3 hours)
+     * suggested adjustments (e.g., move low-priority tasks to afternoon)
 
-5. Save the schedule and meal plan to disk automatically in a date folder:
+6. Save the schedule and meal plan to disk automatically in a date folder:
    - folder path: `schedules/YYYY-MM-DD/`
    - target files:
      * `schedules/YYYY-MM-DD/schedule_HHMM-SS.md`
-     * `schedules/YYYY-MM-DD/meal-plan_HHMM-SS.md`
+     * `schedules/YYYY-MM-DD/meal-plan_HHMM-SS.md` (only when nutrition tracking is active)
    - ensure the directory exists or create it
-   - include all markdown content generated above in schedule file and detailed meal plan in meal-plan file
+   - include all markdown content generated above in the schedule file and detailed meal plan in the meal-plan file
+   - after files are saved, run the markdown-to-PDF converter script:
+     * `python .github/skills/day-schedule/convert_md_to_pdf.py <input-md> <output-pdf>`
+     * write PDFs to `schedules/YYYY-MM-DD/` with matching names:
+       - `schedule_HHMM-SS.pdf`
+       - `meal-plan_HHMM-SS.pdf`
 
-6. Include a mid-day reschedule workflow:
+7. Include a mid-day reschedule workflow:
    - after creating the schedule, ask: "Would you like to check in mid-day for a reschedule or updates?"
-   - create a check-in point at a time (default 12:00 or before any fixed afternoon commitment)
-   - at check-in, ask user:
+   - set the default check-in time to the **midpoint between start time and end time** (e.g., start 07:00, end 23:00 → check-in at 15:00)
+   - at check-in, ask the user:
      * "How is your day going so far?"
      * "Do you want to keep this plan, shift tasks, or swap priorities for the afternoon/evening?"
-   - if user requests changes, regenerate a revised hourly plan from current time onward, keeping completed items locked and adjusting remaining slots.
-   - save revisions as `schedules/YYYY-MM-DD_HHMM-SS-revised.md`.
+   - if the user requests changes, regenerate a revised hourly plan from current time onward, keeping completed items locked and adjusting remaining slots
+   - save revisions into the same date folder: `schedules/YYYY-MM-DD/schedule_HHMM-SS-revised.md`
 
-7. After output and save, ask the user:
-   - "Would you like me to adjust this schedule for focus mode, bigger breaks, or to include a weekly context?"
-   - "Do you want a plain text copy, a GitHub markdown file template, or a calendar import format?"
+8. After output and save, ask the user a single combined prompt:
+   - "Would you like to: **[A]** adjust for focus mode or bigger breaks, **[B]** add weekly context, or **[C]** export as plain text, GitHub markdown template, or calendar import format?"
 
-8. If the user asks for a follow-up after planning, make the requested revision.
+9. If the user asks for a follow-up after planning, make the requested revision.
 
-7. Always keep responses short, readable, and actionable.
+10. Always keep responses short, readable, and actionable.
+
+---
 
 Example task solicitation prompt:
 
-- "Please list your tasks in priority order with estimated durations. Include any fixed appointments or deadlines."
+- "Please list your tasks in priority order with estimated durations. Mark any fixed appointments with `[fixed]`."
 - "What time do you want to start and finish the day?"
-
+- "Are you tracking nutrition or planning meals today?"
