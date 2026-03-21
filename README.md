@@ -66,6 +66,7 @@ schedules/
 |-------|------|-------------|
 | `day-schedule-planner` | `.github/skills/day-schedule-planner.md` | Plan a full day with hourly blocks, priorities, nutrition, and mid-day check-ins |
 | `get-weather` | `.github/skills/forecast/skill.md` | Get the current weather for a given location (defaults to Melbourne), via `weather.sh` |
+| `ytd-summarise` | `.github/skills/ytd-summarise/skill.md` | Download YouTube audio with yt-dlp, transcribe with Whisper, save transcript under `transcripts/`, and append summary |
 
 ---
 
