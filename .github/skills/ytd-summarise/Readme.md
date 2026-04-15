@@ -22,7 +22,7 @@ This directory contains a Copilot skill that:
    cd .github/skills/ytd-summarise
    chmod +x transcribe.sh
    . .venv/bin/activate  # if using virtual environment
-   ./transcribe.sh "https://www.youtube.com/watch?v=rZX1OYetbSM"
+   ./transcribe.sh "URL"
    ```
 3. Check generated file in `transcripts/`:
    - `videoID_videoTitle.txt`
