@@ -30,7 +30,12 @@ bash .github/skills/forecast/weather.sh "Melbourne"
 
 ## Key conventions
 
-- Follow the actual folder-based layout under `.github/skills/<skill-dir>/skill.md`. The root `README.md` still shows some older flat-file examples, but the current repository structure uses per-skill directories.
+- Follow the actual folder-based layout under `.github/skills/<skill-dir>/`. Put each new skill in its own directory named for the skill. A skill directory SHOULD include at minimum:
+  - `skill.md` (required) — the skill definition; its YAML frontmatter `name:` registers the `/` command
+  - `README.md` (required) — usage, prerequisites, example invocations, and expected outputs
+  - any helper scripts, assets, or venvs (optional) — keep scripts executable and prefer relative paths; document runtime assumptions in the README
+
+  Keep generated outputs under `outputs/` or a skill-specific output folder (document this in the skill README). The root `README.md` contains onboarding info but may show older examples; prefer the per-skill directory layout.
 - The Copilot command name comes from the YAML frontmatter in `skill.md`, not from the folder name. For example, `day-schedule/skill.md` registers `day-schedule-planner`, and `forecast/skill.md` registers `get-weather`.
 - Preserve output contracts when editing skills:
   - `day-schedule` expects exact markdown sections such as `## Overview`, `## Task List`, `## Hourly Plan`, optional `## Nutrition Plan`, and `## Notes`, plus timestamped files under `schedules/YYYY-MM-DD/`.
