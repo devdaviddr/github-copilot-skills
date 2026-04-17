@@ -1,3 +1,5 @@
 .github/skills/ytd-summarise/transcripts
 transcripts/
 outputs/
+.github/skills/*/.env
+.DS_Store

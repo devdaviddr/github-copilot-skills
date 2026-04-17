@@ -9,37 +9,237 @@ if [[ ! -f "$MD_FILE" ]]; then
   exit 2
 fi
 
-if command -v pandoc >/dev/null 2>&1; then
-  echo "Converting $MD_FILE -> $PDF_FILE using pandoc..."
+# ---------------------------------------------------------------------------
+# Metadata extraction
+# ---------------------------------------------------------------------------
+TITLE=$(grep -m1 '^# ' "$MD_FILE" | sed 's/^# //')
+[[ -z "$TITLE" ]] && TITLE="Document"
 
-  # If a TeX engine exists, prefer it. Otherwise try tectonic, or fall back to HTML output.
-  if command -v xelatex >/dev/null 2>&1 || command -v pdflatex >/dev/null 2>&1 || command -v lualatex >/dev/null 2>&1; then
-    # Prefer xelatex for better font handling; pandoc will choose pdflatex if xelatex isn't present
-    pandoc "$MD_FILE" -s -o "$PDF_FILE" --pdf-engine=xelatex || pandoc "$MD_FILE" -s -o "$PDF_FILE"
-  elif command -v tectonic >/dev/null 2>&1; then
-    echo "Using tectonic as PDF engine"
-    pandoc "$MD_FILE" -s -o "$PDF_FILE" --pdf-engine=tectonic
+VERSION=$(grep -m1 '^\*\*Version:' "$MD_FILE" | sed 's/^\*\*Version:\*\* *//')
+[[ -z "$VERSION" ]] && VERSION=""
+
+AUTHORS=$(grep -m1 '^\*\*Authors:' "$MD_FILE" | sed 's/^\*\*Authors:\*\* *//')
+[[ -z "$AUTHORS" ]] && AUTHORS=""
+
+DATE_LINE=$(grep -m1 '^\*\*Date:' "$MD_FILE" | sed 's/^\*\*Date:\*\* *//')
+[[ -z "$DATE_LINE" ]] && DATE_LINE=$(date '+%Y-%m-%d')
+
+# Escape LaTeX special characters in freeform strings
+latex_escape() {
+  # Order matters: backslash must come first
+  echo "$1" \
+    | sed 's/\\/\\textbackslash{}/g' \
+    | sed 's/&/\\&/g' \
+    | sed 's/%/\\%/g' \
+    | sed 's/\$/\\$/g' \
+    | sed 's/#/\\#/g' \
+    | sed 's/_/\\_/g' \
+    | sed 's/{/\\{/g' \
+    | sed 's/}/\\}/g' \
+    | sed 's/\^/\\textasciicircum{}/g' \
+    | sed 's/~/\\textasciitilde{}/g'
+}
+
+TITLE_TEX=$(latex_escape "$TITLE")
+AUTHORS_TEX=$(latex_escape "$AUTHORS")
+VERSION_TEX=$(latex_escape "$VERSION")
+DATE_TEX=$(latex_escape "$DATE_LINE")
+
+# Is this a draft (version starts with 0)?
+IS_DRAFT=false
+if [[ "$VERSION" =~ ^0 ]]; then
+  IS_DRAFT=true
+fi
+
+# ---------------------------------------------------------------------------
+# Temporary workspace
+# ---------------------------------------------------------------------------
+TMP_DIR=$(mktemp -d)
+trap 'rm -rf "$TMP_DIR"' EXIT
+
+COVER_TEX="$TMP_DIR/cover.tex"
+HEADER_TEX="$TMP_DIR/header.tex"
+VERSION_MD="$TMP_DIR/version.md"
+COMBINED_MD="$TMP_DIR/combined.md"
+
+# ---------------------------------------------------------------------------
+# header.tex — packages, colours, typography, header/footer
+# ---------------------------------------------------------------------------
+cat > "$HEADER_TEX" <<'HEADER_EOF'
+%% ---- packages ----
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{calc}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{fancyvrb}
+\usepackage{graphicx}
+\usepackage{caption}
+
+%% ---- colour palette ----
+\definecolor{darkblue}{HTML}{003366}
+\definecolor{ruleblue}{HTML}{004499}
+\definecolor{lightgrey}{HTML}{F5F5F5}
+\definecolor{midgrey}{HTML}{CCCCCC}
+\definecolor{draftred}{HTML}{CC0000}
+
+\providecommand{\doctitle}{}
+\providecommand{\docversion}{}
+\providecommand{\docdate}{}
+
+%% ---- document-level setup (deferred to avoid Missing \begin{document} error) ----
+\AtBeginDocument{%
+  %% fancy header/footer
+  \pagestyle{fancy}%
+  \fancyhf{}%
+  \fancyhead[L]{\small\textsc{\doctitle}}%
+  \fancyhead[R]{\small\nouppercase{\leftmark}}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\headrule}{\color{ruleblue}\hrule width\headwidth height\headrulewidth}%
+  \fancyfoot[L]{\small\textcolor{darkblue}{\docversion}}%
+  \fancyfoot[C]{\small Page~\thepage~of~\pageref{LastPage}}%
+  \fancyfoot[R]{\small\docdate}%
+  \renewcommand{\footrulewidth}{0.4pt}%
+  \renewcommand{\footrule}{\color{ruleblue}\hrule width\headwidth height\footrulewidth}%
+  \fancypagestyle{plain}{\fancyhf{}\renewcommand{\headrulewidth}{0pt}\renewcommand{\footrulewidth}{0pt}}%
+}
+HEADER_EOF
+
+# ---------------------------------------------------------------------------
+# cover.tex — LaTeX titlepage environment
+# ---------------------------------------------------------------------------
+DRAFT_STRIP=""
+if [[ "$IS_DRAFT" == "true" ]]; then
+  DRAFT_STRIP=$(cat <<'DRAFTEOF'
+\vspace{8mm}
+{\color{draftred}\rule{\textwidth}{1.5pt}}
+\vspace{1mm}
+{\centering\color{draftred}\bfseries\large DRAFT --- NOT FOR DISTRIBUTION\par}
+\vspace{1mm}
+{\color{draftred}\rule{\textwidth}{1.5pt}}
+DRAFTEOF
+  )
+fi
+
+cat > "$COVER_TEX" <<COVER_EOF
+% Define doc metadata macros for header/footer (accessible after titlepage group)
+\renewcommand{\doctitle}{${TITLE_TEX}}
+\renewcommand{\docversion}{${VERSION_TEX}}
+\renewcommand{\docdate}{${DATE_TEX}}
+
+\begin{titlepage}
+\centering
+\vspace*{20mm}
+
+{\large\bfseries\color{darkblue} Software Requirements Specification\par}
+\vspace{10mm}
+{\color{ruleblue}\rule{\textwidth}{1.5pt}\par}
+\vspace{6mm}
+{\Huge\bfseries\color{darkblue} ${TITLE_TEX}\par}
+\vspace{6mm}
+{\color{ruleblue}\rule{\textwidth}{1.5pt}\par}
+\vspace{10mm}
+
+\begin{tabular}{rl}
+  \textbf{\color{darkblue}Version:}  & ${VERSION_TEX} \\\\[4pt]
+  \textbf{\color{darkblue}Authors:}  & ${AUTHORS_TEX} \\\\[4pt]
+  \textbf{\color{darkblue}Date:}     & ${DATE_TEX} \\\\
+\end{tabular}
+
+${DRAFT_STRIP}
+
+\vfill
+{\small\color{midgrey} Generated by GitHub Copilot SRS Generator}
+\end{titlepage}
+COVER_EOF
+
+# ---------------------------------------------------------------------------
+# Version history table page
+# ---------------------------------------------------------------------------
+cat > "$VERSION_MD" <<EOF
+## Document Revision History
+
+| Version | Date | Author | Notes |
+|---------|------|--------|-------|
+| ${VERSION:-0.1} | ${DATE_LINE} | ${AUTHORS} | Initial draft |
+
+\newpage
+EOF
+
+# ---------------------------------------------------------------------------
+# Combine: version history + main document body
+# (pandoc --toc handles the table of contents automatically)
+# ---------------------------------------------------------------------------
+{
+  cat "$VERSION_MD"
+  cat "$MD_FILE"
+} > "$COMBINED_MD"
+
+# ---------------------------------------------------------------------------
+# Choose PDF engine
+# ---------------------------------------------------------------------------
+if ! command -v pandoc >/dev/null 2>&1; then
+  echo "Pandoc not found on PATH. Markdown saved at $MD_FILE; PDF not created." >&2
+  exit 2
+fi
+
+PDF_ENGINE=""
+if command -v xelatex >/dev/null 2>&1; then
+  PDF_ENGINE="xelatex"
+elif command -v tectonic >/dev/null 2>&1; then
+  PDF_ENGINE="tectonic"
+elif command -v pdflatex >/dev/null 2>&1; then
+  PDF_ENGINE="pdflatex"
+fi
+
+# ---------------------------------------------------------------------------
+# Build PDF
+# ---------------------------------------------------------------------------
+mkdir -p "$(dirname "$PDF_FILE")"
+
+echo "Converting with pandoc — professional A4 layout..."
+if [[ -n "$PDF_ENGINE" ]]; then
+  echo "Using PDF engine: $PDF_ENGINE"
+  PANDOC_ARGS=(
+    --include-in-header="$HEADER_TEX"
+    --include-before-body="$COVER_TEX"
+    -s
+    -V "geometry:top=30mm,bottom=25mm,left=25mm,right=25mm"
+    -V "papersize:a4"
+    -V "colorlinks=true"
+    -V "linkcolor=NavyBlue"
+    --toc
+    --toc-depth=3
+    --number-sections
+  )
+
+  if [[ "$PDF_ENGINE" == "tectonic" ]]; then
+    # Tectonic fails when pandoc pipes via stdin; generate .tex first then compile directly.
+    TEX_FILE="$TMP_DIR/document.tex"
+    pandoc "$COMBINED_MD" "${PANDOC_ARGS[@]}" -o "$TEX_FILE"
+    tectonic -o "$(dirname "$PDF_FILE")" "$TEX_FILE"
+    # Tectonic names the output after the .tex file; rename to the desired path.
+    TEX_BASE="$(basename "$TEX_FILE" .tex)"
+    TECTONIC_OUT="$(dirname "$PDF_FILE")/${TEX_BASE}.pdf"
+    if [[ "$TECTONIC_OUT" != "$PDF_FILE" ]]; then
+      mv "$TECTONIC_OUT" "$PDF_FILE"
+    fi
   else
-    echo "No TeX engine found. Attempting to install tectonic via Homebrew (if available), or falling back to HTML output."
-    if command -v brew >/dev/null 2>&1; then
-      echo "Homebrew available — installing tectonic..."
-      brew install tectonic --quiet || echo "Warning: failed to install tectonic via Homebrew" >&2
-    fi
-
-    if command -v tectonic >/dev/null 2>&1; then
-      pandoc "$MD_FILE" -s -o "$PDF_FILE" --pdf-engine=tectonic
-    else
-      HTML_FILE="${PDF_FILE%.pdf}.html"
-      echo "No PDF engine available; producing HTML at $HTML_FILE"
-      pandoc "$MD_FILE" -s -o "$HTML_FILE"
-      echo "Markdown saved at $MD_FILE; HTML saved at $HTML_FILE; PDF not created." >&2
-      exit 3
-    fi
+    pandoc "$COMBINED_MD" "${PANDOC_ARGS[@]}" --pdf-engine="$PDF_ENGINE" -o "$PDF_FILE"
   fi
 
   echo "PDF written: $PDF_FILE"
   exit 0
 else
-  echo "Pandoc not found on PATH. Markdown saved at $MD_FILE; PDF not created." >&2
-  exit 2
+  echo "No PDF engine (xelatex/pdflatex/tectonic) found. Producing HTML fallback."
+  HTML_FILE="${PDF_FILE%.pdf}.html"
+  pandoc "$COMBINED_MD" -s -o "$HTML_FILE"
+  echo "Markdown saved at $MD_FILE; HTML saved at $HTML_FILE; PDF not created." >&2
+  exit 3
 fi

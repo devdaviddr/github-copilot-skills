@@ -3,6 +3,8 @@
 
 A learning repository of GitHub Copilot skill definitions — composable, prompt-driven agents that run inside VS Code to automate repeatable workflows like day planning, scheduling, and productivity tracking.
 
+Security: This repository should never contain secrets or private keys. Use per-skill .env.example files (for example: .github/skills/*/.env.example) and never commit actual .env files. The repository's .gitignore already excludes common output and secret files (transcripts/, outputs/, and skill .env files). If any sensitive values are found in the history, rotate the affected credentials immediately and remove them from the repo history.
+
 ---
 
 ## What Are Copilot Skills?
@@ -24,7 +26,7 @@ Skills are a way to encode repeatable expert workflows as plain text, then execu
 User types /skill-name in Copilot Chat
           │
           ▼
-Skill file read from .github/skills/<skill-name>.md
+Skill file read from .github/skills/<skill-dir>/skill.md
           │
           ▼
 Copilot follows the instructions:
@@ -36,7 +38,7 @@ Copilot follows the instructions:
 Output written to disk and displayed in chat
 ```
 
-1. The skill file (`.github/skills/<skill-name>.md`) describes the behavior and step-by-step instructions.
+1. The skill file (`.github/skills/<skill-dir>/skill.md`) describes the behavior and step-by-step instructions.
 2. Copilot reads the skill at invocation time and uses it as a system-level prompt to guide its responses.
 3. In **Agent Mode**, Copilot can also run scripts and terminal commands defined in the skill instructions.
 4. Output is saved to the repo, shown in the editor, or both.
@@ -48,8 +50,19 @@ Output written to disk and displayed in chat
 ```
 .github/
 └── skills/
-    ├── day-schedule-planner.md     ← skill definitions live here
-    └── <your-next-skill>.md
+    ├── day-schedule/
+    │   ├── skill.md
+    │   └── README.md
+    ├── forecast/
+    │   ├── skill.md
+    │   ├── README.md
+    │   └── weather.sh
+    └── <your-next-skill>/
+        ├── skill.md
+        └── README.md
+
+outputs/
+└── ...                             ← skill-specific generated artifacts
 
 schedules/
 └── YYYY-MM-DD/
@@ -64,8 +77,11 @@ schedules/
 
 | Skill | File | Description |
 |-------|------|-------------|
-| `day-schedule-planner` | `.github/skills/day-schedule-planner.md` | Plan a full day with hourly blocks, priorities, nutrition, and mid-day check-ins |
+| `day-schedule-planner` | `.github/skills/day-schedule/skill.md` | Plan a full day with hourly blocks, priorities, nutrition, and mid-day check-ins |
 | `get-weather` | `.github/skills/forecast/skill.md` | Get the current weather for a given location (defaults to Melbourne), via `weather.sh` |
+| `nextjs-app-builder` | `.github/skills/nextjs-app-builder/skill.md` | Scaffold a full-stack Next.js 14 App Router app with pages, API routes, and an in-memory data layer |
+| `server-checkup` | `.github/skills/server-checkup/skill.md` | SSH into a configured server, collect health metrics, and write a structured health report |
+| `srs-generator` | `.github/skills/srs-generator/skill.md` | Collect project requirements interactively and write a Software Requirements Specification in Markdown |
 | `ytd-summarise` | `.github/skills/ytd-summarise/skill.md` | Download YouTube audio with yt-dlp, transcribe with Whisper, save transcript under `transcripts/`, and append summary |
 
 ---
@@ -106,10 +122,10 @@ If a skill doesn't appear:
 Every skill file must begin with this YAML block — the `name` field is what Copilot registers as the `/` command:
 
 ```yaml
-***
+---
 name: day-schedule-planner
 description: Plan a daily schedule and output tasks and hourly assignments in markdown.
-***
+---
 ```
 
 ---
@@ -117,16 +133,17 @@ description: Plan a daily schedule and output tasks and hourly assignments in ma
 ## Creating a New Skill
 
 ```bash
-touch .github/skills/my-new-skill.md
+mkdir -p .github/skills/my-new-skill
+touch .github/skills/my-new-skill/skill.md .github/skills/my-new-skill/README.md
 ```
 
 Paste this starter template:
 
 ```markdown
-***
+---
 name: my-new-skill
 description: One sentence describing what this skill does.
-***
+---
 
 When a user invokes this skill, follow this flow:
 
@@ -192,7 +209,7 @@ Enable Agent Mode in VS Code for Copilot to automatically save files and run ter
 
 ## Adding Skills Globally (Any Repo)
 
-To use a skill outside this repository, copy the skill file into the target repo's `.github/skills/` folder, or add this repo as a Git submodule:
+To use a skill outside this repository, copy the skill directory into the target repo's `.github/skills/` folder, or add this repo as a Git submodule:
 
 ```bash
 cd your-other-project
@@ -209,15 +226,14 @@ ln -s ~/projects/github-copilot-skills/.github/skills /path/to/other-repo/.githu
 
 ## Skill Output
 
-All generated files are saved under `schedules/` organised by date:
+Generated files are written to skill-specific locations. Common examples in this repo:
 
+```text
+schedules/YYYY-MM-DD/                  # day-schedule planner
+outputs/srs/YYYY-MM-DD/                # srs-generator
+outputs/server-checkup/                # server-checkup
+transcripts/                           # ytd-summarise
+outputs/nextjs-apps/<app-slug>/        # nextjs-app-builder
 ```
-schedules/
-└── 2026-03-21/
-    ├── schedule_083000.md
-    ├── meal-plan_083000.md
-    └── schedule_150000-revised.md
-```
 
-Review your history by browsing date folders. Each file is timestamped to avoid overwrites across multiple runs on the same day.
-
+Review the README inside each skill directory for its exact output contract and any helper-script details.

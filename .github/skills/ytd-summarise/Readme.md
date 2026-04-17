@@ -1,5 +1,7 @@
 # YouTube Summarise Skill
 
+Security: Transcripts may contain sensitive or copyrighted material. Transcripts/ is ignored by default; do not commit generated transcripts or any downloaded media. Store any service credentials (if added later) in a local .env and keep them out of source control.
+
 This directory contains a Copilot skill that:
 
 1. Downloads YouTube audio from a URL using `yt-dlp`

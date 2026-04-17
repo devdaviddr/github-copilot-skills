@@ -1,5 +1,7 @@
 # Forecast Skill
 
+Security: This skill does not require storing secrets in the repo. If you extend the script to use an external weather API, store any API keys in a local .env file or environment variables and add them to .gitignore.
+
 This directory contains a Copilot Skill that runs a weather script and formats the result.
 
 ## Files

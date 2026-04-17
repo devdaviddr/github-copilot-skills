@@ -1,0 +1,28 @@
+Project: Courier QR Code; Version: 1.0.0; Authors: author@gmail.com, developer@gmail.com; Date: 2026-04-16; Audience: Operations team who needs to scan and record the pickup and drop off of packages; Timezone: Australia/Melbourne;
+
+Intro: Purpose: Courier QR Code provides a lightweight mobile scanning system for couriers to scan QR codes on packages at pickup and drop-off, automatically recording timestamp, geolocation, courier ID, and package status in the backend. Scope: Covers mobile scanning app, backend REST API for recording scan events, admin dashboard for operations, and auditing/reporting exports. Definitions: QR Code = machine-readable 2D barcode; ScanEvent = single scan record; PackageID = unique package identifier.
+
+Overall description: Product perspective: integrates with carrier backend and an operations dashboard. User classes: Courier (mobile app), Dispatcher/Operator (web dashboard), Admin (manage users and settings). Operating environment: iOS/Android mobile devices with camera, cloud-hosted backend (Linux), Postgres database. Constraints: intermittent network connectivity on mobile devices; offline caching required.
+
+System features:
+FR-1: Scan and record pickup — Description: Mobile app scans QR on package and records a pickup ScanEvent; Inputs: QR payload, courier ID, optional photo; Outputs: ScanEvent persisted with status=pickup, timestamp, geolocation; Priority: High; Acceptance criteria: new ScanEvent created within 3s locally, synced to server within 30s when online, record appears in dashboard search.
+
+FR-2: Scan and record dropoff — Description: Mobile app scans QR on delivery and records dropoff ScanEvent; Inputs: QR payload, recipient confirmation (optional); Outputs: ScanEvent with status=dropoff, timestamp, geolocation; Priority: High; Acceptance criteria: record updated to delivered status, notification to Dispatcher.
+
+FR-3: Offline caching and sync — Description: Store scans locally when offline and sync when network returns; Priority: High; Acceptance criteria: no data loss during network outage; FIFO upload order.
+
+FR-4: Admin dashboard — Description: Web UI to search packages, view scan history, and generate CSV reports; Priority: Medium; Acceptance criteria: search returns results within 2s for 1M records (paged), export CSV includes all scan fields.
+
+External interfaces: Mobile camera for scanning, REST API (HTTPS/JSON) for record submission, Postgres DB for storage, optional S3 for photo attachments.
+
+Non-functional requirements: Performance: mobile scan latency under 500ms local processing; Availability: backend 99.9%; Security: TLS for all transport, encrypt PII at rest; Scalability: support 100k daily scans; Accessibility: web dashboard basic keyboard navigation; Privacy: retain scan data for 90 days by default.
+
+Data model / Entities: Package {id, tracking_number, weight, dimensions}; ScanEvent {id, package_id, courier_id, status, timestamp, lat, lon, photo_url, device_id}; User {id, name, role, email}; SyncQueue {id, payload, status, created_at}.
+
+Use cases: UC-1 Courier scans package at pickup → system records ScanEvent and updates package status to "in_transit". UC-2 Courier scans package at dropoff → system records ScanEvent, updates status to "delivered", and optionally captures recipient name.
+
+Acceptance criteria and test notes: For FR-1 and FR-2 include automated integration tests that simulate offline-to-online transitions, include geolocation validation, and assert dashboard visibility. Provide manual QA checklist for operator training.
+
+Appendices / Glossary: QR Code, ScanEvent, PackageID, CourierID.
+
+Done

@@ -1,6 +1,6 @@
 ---
 name: srs-generator
-description: Prompt-driven SRS (Software Requirements Specification) generator. Collects required project information, produces a comprehensive SRS in Markdown, and creates a PDF.
+description: Prompt-driven SRS (Software Requirements Specification) generator. Collects required project information and produces a comprehensive SRS in Markdown.
 ---
 
 When a user requests an SRS, follow this flow:
@@ -83,15 +83,12 @@ When a user requests an SRS, follow this flow:
 9. Appendices / Glossary
 
 
-5. Save files to an outputs folder using a timestamped directory under the repository root: `outputs/srs/YYYY-MM-DD/`.
+5. Save the Markdown file to a timestamped directory under the repository root: `outputs/srs/YYYY-MM-DD/`.
    - Markdown filename: `<project-slug>_SRS.md` (slug: lowercase, alnum and dashes only)
-   - PDF filename: `<project-slug>_SRS.pdf`
 
-6. After writing the Markdown file, run the helper script `generate_srs.sh <md-path> <pdf-path>` in the same skill directory to produce the PDF. If PDF generation fails, report the error and keep the markdown.
+6. When finished, present a brief confirmation listing the saved path and ask whether the user wants revisions, additional features, or a Git commit.
 
-7. When finished, present a brief confirmation listing saved paths and ask whether the user wants revisions, additional features, or a Git commit.
-
-8. Keep prompts concise; only ask one question at a time. When asking for lists (features, glossary entries), allow multi-line input or repeated prompts until the user signals completion.
+7. Keep prompts concise; only ask one question at a time. When asking for lists (features, glossary entries), allow multi-line input or repeated prompts until the user signals completion.
 
 Example invocation (one-shot):
 
@@ -100,4 +97,4 @@ Example invocation (one-shot):
 Interactive notes:
 - Accept the word `done` when the user has finished adding repeated items (features, glossary entries, use cases).
 - Confirm each feature summary after it's entered and re-prompt for missing acceptance criteria or priority.
-- Always report exact saved paths for the Markdown and PDF/HTML output when finished.
+- Always report the exact saved path for the Markdown file when finished.
