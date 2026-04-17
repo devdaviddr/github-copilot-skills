@@ -3,7 +3,7 @@
 
 A learning repository of GitHub Copilot skill definitions — composable, prompt-driven agents that run inside VS Code to automate repeatable workflows like day planning, scheduling, and productivity tracking.
 
-Security: This repository should never contain secrets or private keys. Use per-skill .env.example files (for example: .github/skills/*/.env.example) and never commit actual .env files. The repository's .gitignore already excludes common output and secret files (transcripts/, outputs/, and skill .env files). If any sensitive values are found in the history, rotate the affected credentials immediately and remove them from the repo history.
+
 
 ---
 
