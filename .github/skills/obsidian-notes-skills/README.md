@@ -62,6 +62,22 @@ Examples and expected outputs
       }
     ]
 
+- obsidian-create-article
+  Command:
+    ./.github/skills/obsidian-notes-skills/obsidian_api.sh POST /files --data '{"path":"articles/2026-04-18-my-article.md","content":"---\\ntitle: My Article\\ndate: 2026-04-18\\ntags: [article]\\n---\\n\\n# My Article\\n\\nThis is the first paragraph of the article.\\n"}'
+  Expected created note (Markdown):
+
+    ---
+    title: My Article
+    date: 2026-04-18
+    tags: [article]
+    ---
+
+    # My Article
+
+    This is the first paragraph of the article.
+
+
 Notes and troubleshooting
 - The helper script prefers curl. If curl is not installed, obsidian_api.sh will attempt a Python 3 fallback using urllib.request. Ensure python3 is installed.
 - If you see "curl: command not found", install curl:
