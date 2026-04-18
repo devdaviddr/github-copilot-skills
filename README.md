@@ -1,7 +1,7 @@
 
 # GitHub Copilot Skills
 
-A learning repository of GitHub Copilot skill definitions — composable, prompt-driven agents that run inside VS Code to automate repeatable workflows like day planning, scheduling, and productivity tracking.
+A library of GitHub Copilot skill definitions — composable, prompt-driven agents that run inside VS Code to automate repeatable workflows. Skills cover day planning, weather, server health, SRS generation, Next.js scaffolding, YouTube transcription, and Obsidian vault management.
 
 
 
@@ -57,9 +57,40 @@ Output written to disk and displayed in chat
     │   ├── skill.md
     │   ├── README.md
     │   └── weather.sh
-    └── <your-next-skill>/
+    ├── nextjs-app-builder/
+    │   ├── skill.md
+    │   └── README.md
+    ├── obsidian-notes-skills/          ← group of 5 Obsidian API skills
+    │   ├── README.md
+    │   ├── obsidian_api.sh             ← shared curl/python helper
+    │   ├── append-note/
+    │   │   ├── skill.md
+    │   │   └── README.md
+    │   ├── create-note/
+    │   │   ├── skill.md
+    │   │   └── README.md
+    │   ├── list-active/
+    │   │   ├── skill.md
+    │   │   └── README.md
+    │   ├── open-note/
+    │   │   ├── skill.md
+    │   │   └── README.md
+    │   └── search-notes/
+    │       ├── skill.md
+    │       └── README.md
+    ├── server-checkup/
+    │   ├── skill.md
+    │   ├── README.md
+    │   └── checkup.sh
+    ├── srs-generator/
+    │   ├── skill.md
+    │   └── README.md
+    ├── ytd-list/
+    │   ├── skill.md
+    │   └── README.md
+    └── ytd-summarise/
         ├── skill.md
-        └── README.md
+        └── transcribe.sh
 
 outputs/
 └── ...                             ← skill-specific generated artifacts
@@ -69,20 +100,41 @@ schedules/
     ├── schedule_HHMM-SS.md         ← generated daily plan
     ├── meal-plan_HHMM-SS.md        ← generated nutrition plan
     └── schedule_HHMM-SS-revised.md ← mid-day reschedule (if triggered)
+
+transcripts/
+└── <video-id>_<title>.md           ← ytd-summarise transcripts + TL;DR
+
+spec/
+└── revision-YYMMDD.md              ← audit and revision notes
 ```
 
 ---
 
 ## Available Skills
 
-| Skill | File | Description |
-|-------|------|-------------|
+### Core Skills
+
+| Command | File | Description |
+|---------|------|-------------|
 | `day-schedule-planner` | `.github/skills/day-schedule/skill.md` | Plan a full day with hourly blocks, priorities, nutrition, and mid-day check-ins |
 | `get-weather` | `.github/skills/forecast/skill.md` | Get the current weather for a given location (defaults to Melbourne), via `weather.sh` |
 | `nextjs-app-builder` | `.github/skills/nextjs-app-builder/skill.md` | Scaffold a full-stack Next.js 14 App Router app with pages, API routes, and an in-memory data layer |
 | `server-checkup` | `.github/skills/server-checkup/skill.md` | SSH into a configured server, collect health metrics, and write a structured health report |
 | `srs-generator` | `.github/skills/srs-generator/skill.md` | Collect project requirements interactively and write a Software Requirements Specification in Markdown |
-| `ytd-summarise` | `.github/skills/ytd-summarise/skill.md` | Download YouTube audio with yt-dlp, transcribe with Whisper, save transcript under `transcripts/`, and append summary |
+| `yt-summarise` | `.github/skills/ytd-summarise/skill.md` | Download YouTube audio with yt-dlp, transcribe with Whisper, save transcript under `transcripts/`, and append a TL;DR summary |
+| `ytd-list` | `.github/skills/ytd-list/skill.md` | Fetch all uploads from a YouTube channel and save to CSV using the YouTube Data API v3 |
+
+### Obsidian Notes Skills
+
+A group of five skills for interacting with a local [Obsidian](https://obsidian.md/) vault via the [Local REST API](https://github.com/coddingtonbear/obsidian-local-rest-api) plugin. They share a common helper script (`obsidian_api.sh`) and require `OBSIDIAN_API_TOKEN` to be set. See `.github/skills/obsidian-notes-skills/README.md` for setup.
+
+| Command | File | Description |
+|---------|------|-------------|
+| `obsidian-list-active` | `obsidian-notes-skills/list-active/skill.md` | List the currently active Obsidian vault and confirm the API is reachable |
+| `obsidian-search-notes` | `obsidian-notes-skills/search-notes/skill.md` | Search notes in the vault by keyword using the local REST API |
+| `obsidian-open-note` | `obsidian-notes-skills/open-note/skill.md` | Fetch and display a note by file path |
+| `obsidian-create-note` | `obsidian-notes-skills/create-note/skill.md` | Create a new note in the vault with a given path and content |
+| `obsidian-append-note` | `obsidian-notes-skills/append-note/skill.md` | Append text to an existing note in the vault |
 
 ---
 
