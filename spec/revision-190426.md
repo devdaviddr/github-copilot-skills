@@ -238,14 +238,14 @@ The README describes usage and output but does not mention that there are no ext
 
 | # | Recommendation | Priority | Status |
 |---|---|---|---|
-| R1 | Update root README skills table + layout | High | ⬜ |
-| R2 | Add `description` to obsidian skill.md frontmatter | High | ⬜ |
-| R3 | Add instruction flow to obsidian skill.md files | High | ⬜ |
-| R4 | Fix `ytd-list` frontmatter field names | Medium | ⬜ |
-| R5 | Expand `ytd-list` skill.md with input/output flow | Medium | ⬜ |
-| R6 | Create `ytd-summarise/README.md` | Medium | ⬜ |
-| R7 | Fix `/forecast` → `/get-weather` in forecast README | Medium | ⬜ |
-| R8 | Fix path + YAML delimiters in day-schedule README | Medium | ⬜ |
-| R9 | Replace hardcoded IP in server-checkup skill.md | Low | ⬜ |
-| R10 | Format obsidian sub-skill READMEs as markdown | Low | ⬜ |
-| R11 | Add prerequisites note to srs-generator README | Low | ⬜ |
+| R1 | Update root README skills table + layout | High | ✅ |
+| R2 | Add `description` to obsidian skill.md frontmatter | High | ✅ |
+| R3 | Add instruction flow to obsidian skill.md files | High | ✅ |
+| R4 | Fix `ytd-list` frontmatter field names | Medium | ✅ |
+| R5 | Expand `ytd-list` skill.md with input/output flow | Medium | ✅ |
+| R6 | Create `ytd-summarise/README.md` | Medium | ✅ |
+| R7 | Fix `/forecast` → `/get-weather` in forecast README | Medium | ✅ |
+| R8 | Fix path + YAML delimiters in day-schedule README | Medium | ✅ |
+| R9 | Replace hardcoded IP in server-checkup skill.md | Low | ✅ |
+| R10 | Format obsidian sub-skill READMEs as markdown | Low | ✅ |
+| R11 | Add prerequisites note to srs-generator README | Low | ✅ |
