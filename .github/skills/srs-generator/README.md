@@ -2,7 +2,11 @@ SRS Generator Skill
 
 This Copilot skill generates a complete Software Requirements Specification (SRS) in Markdown.
 
-Usage
+## Prerequisites
+
+No external dependencies — this skill is entirely prompt-driven. No scripts, API keys, or installed packages are required. Just invoke it in Copilot Chat and answer the interactive prompts.
+
+## Usage
 
 1. Open Copilot Chat and invoke the skill by name:
    /srs-generator

@@ -1,11 +1,27 @@
-obsidian-create-note
+# obsidian-create-note
 
-Calls: POST /files (JSON body: path, content)
+Creates a new note in your Obsidian vault with the specified path and content.
 
-Usage:
-  ./obsidian_api.sh POST /files --data '{"path":"notes/new.md","content":"# Title\nBody"}'
+## API call
 
-Example: create an article note with YAML frontmatter
-  ./obsidian_api.sh POST /files --data '{"path":"articles/2026-04-18-my-article.md","content":"---\\ntitle: My Article\\ndate: 2026-04-18\\ntags: [article]\\n---\\n\\n# My Article\\n\\nThis is the first paragraph of the article.\\n"}'
+```
+POST /files
+Body: { "path": "<note-path>", "content": "<markdown-content>" }
+```
 
-If your Obsidian HTTP plugin uses a different route, update the POST target.
+## Usage
+
+```bash
+# Minimal note
+./.github/skills/obsidian-notes-skills/obsidian_api.sh POST /files \
+  --data '{"path":"notes/new.md","content":"# Title\nBody"}'
+
+# Article note with YAML frontmatter
+./.github/skills/obsidian-notes-skills/obsidian_api.sh POST /files \
+  --data '{"path":"articles/2026-04-18-my-article.md","content":"---\ntitle: My Article\ndate: 2026-04-18\ntags: [article]\n---\n\n# My Article\n\nFirst paragraph."}'
+```
+
+## Notes
+
+- If your Obsidian HTTP plugin uses a different route (e.g., `/create-file`), update the POST target accordingly.
+- Ensure `OBSIDIAN_API_TOKEN` is exported before running.

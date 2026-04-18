@@ -12,7 +12,7 @@ This directory contains a Copilot Skill that runs a weather script and formats t
 
 1. Ensure this repo is opened in VS Code with GitHub Copilot enabled.
 2. Invoke the skill from Copilot Chat:
-   - `/forecast` or any command set by `skill.md` name.
+   - `/get-weather` or any command set by `skill.md` name.
    - Example user prompt: "get the forecast for the next few days in cairns"
 3. The skill runs `weather.sh <location>` (defaults to `Melbourne` when no location provided).
 4. The script output is summarized in a friendly sentence as the skill response.

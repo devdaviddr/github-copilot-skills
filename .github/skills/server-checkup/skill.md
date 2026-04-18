@@ -49,7 +49,7 @@ After producing the structured report above, write it as a markdown file to the 
 
 ```markdown
 # Server Health Report
-**Host:** 192.168.4.90
+**Host:** <SERVER_HOST>
 **Checked:** <timestamp from filename>
 **Docker checked:** yes/no
 
@@ -66,7 +66,7 @@ If the report contains any recommendations, prompt the user in chat with the exa
 
 ```markdown
 # Recommendations Action Report
-**Host:** 192.168.4.90
+**Host:** <SERVER_HOST>
 **Generated:** <timestamp from filename>
 
 ---

@@ -1,40 +1,112 @@
-# YouTube Summarise Skill
+# ytd-summarise
 
-Security: Transcripts may contain sensitive or copyrighted material. Transcripts/ is ignored by default; do not commit generated transcripts or any downloaded media. Store any service credentials (if added later) in a local .env and keep them out of source control.
+Security: Transcripts may contain copyrighted material. Do not commit generated transcripts or downloaded media. The `transcripts/` directory is gitignored by default.
 
-This directory contains a Copilot skill that:
+Downloads and transcribes a YouTube video, then writes a structured summary with a TL;DR.
 
-1. Downloads YouTube audio from a URL using `yt-dlp`
-2. Transcribes audio to text with `whisper`
-3. Saves the full transcript under `transcripts/` with naming pattern `videoID_videoTitle.txt`
-4. Appends a generated summary to the end of the transcript file
+---
 
-## Files
-- `skill.md`: skill definition and instructions for the agent
-- `transcribe.sh`: automation script for downloading, transcribing, and saving
-- `transcripts/`: generated transcripts and summaries
+## Prerequisites
 
-## Usage
+| Dependency | Install | Purpose |
+|---|---|---|
+| **yt-dlp** | `pip install yt-dlp` | Downloads audio from YouTube |
+| **Whisper** (optional) | `pip install openai-whisper` | Local AI transcription |
+| **ffmpeg** | `brew install ffmpeg` / `apt install ffmpeg` | Required by yt-dlp for audio extraction |
 
-1. Ensure dependencies are installed:
-   - `yt-dlp`
-   - `python3` with `openai-whisper` (via venv if needed)
-2. Run:
-   ```bash
-   cd .github/skills/ytd-summarise
-   chmod +x transcribe.sh
-   . .venv/bin/activate  # if using virtual environment
-   ./transcribe.sh "URL"
-   ```
-3. Check generated file in `transcripts/`:
-   - `videoID_videoTitle.txt`
-   - includes full transcript, then `---` and `Summary:` section
+> **Whisper is optional.** If Whisper is not installed, `transcribe.sh` falls back to YouTube's auto-generated subtitles. Auto-subtitles require no local compute but may be less accurate.
 
-## Behavior
-- If the video title contains unsafe filename chars, they are sanitized.
-- If transcription fails, script exits with an error message.
-- Summary is derived from first few transcript lines (quick approximation).
+---
+
+## Setup
+
+A Python virtual environment is included at `.venv/`:
+
+```bash
+source .github/skills/ytd-summarise/.venv/bin/activate
+pip install yt-dlp openai-whisper
+```
+
+Or install dependencies globally:
+
+```bash
+pip install yt-dlp openai-whisper
+```
+
+---
+
+## Invoking the skill
+
+In GitHub Copilot Chat or CLI:
+
+```
+/yt-summarise https://www.youtube.com/watch?v=<video-id>
+```
+
+Or describe what you want:
+
+```
+Summarise this video: https://youtu.be/<video-id>
+```
+
+---
+
+## What happens
+
+1. `transcribe.sh` is called with the YouTube URL
+2. `yt-dlp` downloads the audio track
+3. Whisper transcribes the audio (or YouTube auto-subtitles are fetched if Whisper is unavailable)
+4. A `.md` file is written to `transcripts/` with video metadata and the full transcript
+5. Copilot inserts a `## TL;DR` section (2–3 sentences) immediately above `## Transcript`
+6. Key takeaways and (for tutorials) step summaries are listed in the chat response
+
+---
+
+## Output format
+
+Transcript files are saved to `transcripts/` relative to **the current working directory** (run from the repo root):
+
+```
+transcripts/
+└── <video-id>_<safe-title>.md
+```
+
+File structure after Copilot inserts the TL;DR:
+
+```markdown
+# Video Title
+
+**Channel:** Channel Name
+**URL:** https://www.youtube.com/watch?v=<id>
+
+---
+
+## TL;DR
+
+One paragraph summary inserted by Copilot after transcription.
+
+## Transcript
+
+Full transcript text...
+```
+
+---
+
+## Manual smoke test
+
+Run from the repo root:
+
+```bash
+source .github/skills/ytd-summarise/.venv/bin/activate
+bash .github/skills/ytd-summarise/transcribe.sh "https://www.youtube.com/watch?v=<video-id>"
+```
+
+The transcript file will be created in `transcripts/` under the repo root.
+
+---
 
 ## Notes
-- `transcribe.sh` may include longer transcript content in chat output for debugging.
-- This is a demo pipeline; the summary algorithm can be improved with an LLM or stricter sentence selection.
+
+- `transcribe.sh` always writes to `$(pwd)/transcripts/` — always run from the repo root for consistent paths.
+- Whisper model quality can be configured in `transcribe.sh` (default: `base`). Use `small` or `medium` for better accuracy at the cost of speed.
+- Long videos (>30 min) may take several minutes to transcribe locally with Whisper.

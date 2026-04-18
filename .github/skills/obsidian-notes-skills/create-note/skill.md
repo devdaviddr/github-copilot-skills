@@ -1,13 +1,44 @@
 ---
 name: obsidian-create-note
+description: Create a new note in your Obsidian vault with a given path and content via the local REST API.
 ---
 
-Create a new note by POSTing JSON containing path and content. Example body: {"path":"notes/new.md","content":"# Title\nBody"}
+When the user invokes this skill, follow this flow:
 
-Example (shell):
-  ./obsidian_api.sh POST /files --data '{"path":"notes/new.md","content":"# New Note\nHello"}'
+1. Collect required inputs — prompt for any that are missing:
+   - **Note path** — where to create the note inside the vault (e.g., `notes/new-idea.md`)
+   - **Title** — used as the `# H1` heading if the user does not provide full content
+   - **Content** — full markdown body of the note (optional — if not provided, create a minimal note with the title as an H1 heading)
 
-Article example (shell):
-  ./obsidian_api.sh POST /files --data '{"path":"articles/2026-04-18-my-article.md","content":"---\\ntitle: My Article\\ndate: 2026-04-18\\ntags: [article]\\n---\\n\\n# My Article\\n\\nThis is the first paragraph of the article.\\n"}'
+   If the user wants a structured article note, also ask:
+   - **Tags** (optional) — comma-separated list for YAML frontmatter
+   - **Date** — defaults to today's date in `YYYY-MM-DD` format
 
-Adjust endpoint if your Obsidian plugin uses a different API (e.g., /create-file).
+2. Build the note content:
+   - If tags or date were provided, prepend a YAML frontmatter block:
+     ```markdown
+     ---
+     title: <title>
+     date: <date>
+     tags: [<tags>]
+     ---
+     ```
+   - Follow with `# <title>` and the body content.
+
+3. Check that `OBSIDIAN_API_TOKEN` is set. If it is not, tell the user:
+   > "OBSIDIAN_API_TOKEN is not set. Export it with: `export OBSIDIAN_API_TOKEN=<your_token>`"
+   Then stop.
+
+4. Run the create call using `obsidian_api.sh`:
+   ```
+   ./.github/skills/obsidian-notes-skills/obsidian_api.sh POST /files \
+     --data '{"path":"<note-path>","content":"<escaped-content>"}'
+   ```
+
+5. On success, confirm to the user:
+   > "Note created at `<note-path>`."
+   Show a preview of the first few lines.
+
+6. On error, show the raw error and suggest:
+   - The path may already exist — use `obsidian-open-note` to check
+   - Confirm Obsidian is running with the Local REST API plugin active

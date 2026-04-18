@@ -16,23 +16,24 @@ Place the skill definition in your repository at the exact path below:
 ```
 .github/
 └── skills/
-    └── day-schedule-planner.md
+    └── day-schedule/
+        └── skill.md
 ```
 
 **Steps:**
 
 ```bash
-mkdir -p .github/skills
-touch .github/skills/day-schedule-planner.md
+mkdir -p .github/skills/day-schedule
+touch .github/skills/day-schedule/skill.md
 ```
 
-Then paste the full skill content (frontmatter + instructions) into `day-schedule-planner.md`. The file must begin with a YAML frontmatter block:
+Then paste the full skill content (frontmatter + instructions) into `skill.md`. The file must begin with a YAML frontmatter block:
 
 ```yaml
-***
+---
 name: day-schedule-planner
 description: Plan a daily schedule and output tasks and hourly assignments in markdown. Prompt for missing details as needed.
-***
+---
 ```
 
 > The `name` field is what Copilot uses to match the `/` command. Keep it lowercase and hyphenated.
