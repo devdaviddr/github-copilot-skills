@@ -1,6 +1,23 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Load .env files (repo root .env first, then skill-local .env) if OBSIDIAN_API_TOKEN not already set.
+# This reads simple KEY=VALUE lines and exports them. It avoids executing arbitrary shell by parsing lines only.
+for ENVFILE in .env .github/skills/obsidian-notes-skills/.env; do
+  if [ -f "$ENVFILE" ]; then
+    while IFS='=' read -r key val; do
+      # skip comments and empty lines
+      case "$key" in
+        ''|\#*) continue ;;
+      esac
+      key="$(echo "$key" | tr -d '[:space:]')"
+      # strip surrounding quotes from value
+      val="$(echo "$val" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")"
+      export "$key"="$val"
+    done < "$ENVFILE"
+  fi
+done
+
 API_HOST="${OBSIDIAN_API_HOST:-https://127.0.0.1:27124}"
 TOKEN="${OBSIDIAN_API_TOKEN:-}"
 

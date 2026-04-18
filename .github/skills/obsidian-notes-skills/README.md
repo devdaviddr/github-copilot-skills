@@ -23,14 +23,15 @@ Files
 - Subfolders (one skill each): list-active, search-notes, open-note, create-note, append-note
 
 Usage
-1. Export your token (temporary session): export OBSIDIAN_API_TOKEN="<token>"
+1. Preferred (temporary session): export OBSIDIAN_API_TOKEN="<token>"
+   The helper script checks for this environment variable first and will use it for authenticated requests.
 
-Or store it locally in a .env file for a given skill (recommended for local development):
-- Copy the .env.example file in the skill folder (for example: append-note/.env.example -> append-note/.env)
-- Fill in OBSIDIAN_API_TOKEN in the local .env
-- Make sure your .gitignore excludes .env so you do not accidentally commit secrets
+2. Alternative (recommended for local development): store your token in a .env file. If the OBSIDIAN_API_TOKEN environment variable is not set, the helper will look for a .env file in the repository root or the skill folder (.github/skills/obsidian-notes-skills/.env) and load simple KEY=VALUE lines from it.
+   - Copy the .env.example file in the skill folder (for example: append-note/.env.example -> append-note/.env)
+   - Fill in OBSIDIAN_API_TOKEN in the local .env
+   - Ensure your .gitignore excludes .env so you do not accidentally commit secrets
 
-2. Run a skill via the Copilot CLI (e.g., `obsidian-list-active`) or call the script directly:
+3. Run a skill via the Copilot CLI (e.g., `obsidian-list-active`) or call the script directly:
    ./obsidian_api.sh GET /active/
 
 Examples and expected outputs
