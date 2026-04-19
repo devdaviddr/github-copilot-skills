@@ -20,18 +20,35 @@ Downloads and transcribes a YouTube video, then writes a structured summary with
 
 ## Setup
 
-A Python virtual environment is included at `.venv/`:
+Recommended (no venv, uses pipx):
 
 ```bash
+# Install system deps
+brew install ffmpeg deno node pipx
+pipx ensurepath
+
+# Install apps in isolated environments
+pipx install yt-dlp
+pipx install openai-whisper
+
+# Verify
+yt-dlp --version
+pipx list | grep whisper
+```
+
+Alternative (use a project venv):
+
+```bash
+python3 -m venv .github/skills/ytd-summarise/.venv
 source .github/skills/ytd-summarise/.venv/bin/activate
+python -m pip install --upgrade pip
 pip install yt-dlp openai-whisper
 ```
 
-Or install dependencies globally:
+Notes:
+- If your system blocks global pip installs (PEP 668), use the pipx approach or the project venv above.
+- Having a JavaScript runtime and EJS challenge solver (deno or node + yt-dlp's remote components) may be required to fetch some YouTube formats/subtitles. If yt-dlp reports "n challenge" or signature errors, install deno/node and follow the yt-dlp EJS wiki.
 
-```bash
-pip install yt-dlp openai-whisper
-```
 
 ---
 
