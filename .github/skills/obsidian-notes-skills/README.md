@@ -14,20 +14,42 @@ Five Copilot skills for interacting with a local Obsidian vault via the [Local R
 
 ## Setup
 
-Set your API token before invoking any skill:
+Store your API token securely. Recommended options (in order):
+
+1) macOS Keychain (recommended on macOS)
 
 ```bash
-export OBSIDIAN_API_TOKEN="<your_token_here>"
+security add-generic-password -s obsidian-token -a "$USER" -w "<your_token>"
+# Use in shell:
+export OBSIDIAN_API_TOKEN="$(security find-generic-password -s obsidian-token -w)"
 ```
 
-Optionally override the host (default: `https://127.0.0.1:27124`):
+2) XDG config (~/.config/obsidian-api)
+
+Create a file containing a single line:
+
+```
+OBSIDIAN_API_TOKEN=<your_token>
+```
+
+3) Project .env (least preferred — add .env to .gitignore)
+
+Copy the provided template and fill it in:
 
 ```bash
-export OBSIDIAN_API_HOST="https://127.0.0.1:27124"
+cp .github/skills/obsidian-notes-skills/.env.example .env
+# then edit .env and do not commit it
 ```
 
-A `.env.example` is provided — copy it to `.env` in this directory and fill in your token for persistent local use. Ensure `.env` is in your `.gitignore`.
+The included helper `obsidian_api_env.sh` will load the token from the Keychain, then ~/.config/obsidian-api, then .env (repo root), then the skill-local .env. Callers of the shared `obsidian_api.sh` will automatically pick up the token if available.
+
+Summary of changes made to improve token handling:
+
+- Added `obsidian_api_env.sh` to centralize token loading from multiple secure locations (Keychain → XDG config → .env files).
+- Updated `obsidian_api.sh` to source the helper automatically so skills pick the token without manual export.
+- Patched `obsidian_api.sh` to prefer `curl` and fail with a clear error if neither `curl` nor `python3` are available.
+- Added README instructions for storing tokens securely and using the macOS Keychain or ~/.config/obsidian-api.
 
 ## Shared helper
 
-All skills use `obsidian_api.sh` — a thin wrapper that prefers `curl` and falls back to `python3` if curl is unavailable.
+All skills use `obsidian_api.sh` — a thin wrapper that prefers `curl` and will use a python fallback only if available.
