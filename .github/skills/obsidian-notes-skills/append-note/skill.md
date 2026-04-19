@@ -13,10 +13,19 @@ When the user invokes this skill, follow this flow:
    > "OBSIDIAN_API_TOKEN is not set. Export it with: `export OBSIDIAN_API_TOKEN=<your_token>`"
    Then stop.
 
-3. Run the append call using `obsidian_api.sh` from the skill directory:
+3. Run the append call using `obsidian_api.sh` from the skill directory.
+   URL-encode the note path (forward slashes are safe, spaces and special chars must be encoded).
+   `POST /vault/{encoded-path}` appends the body text to the note:
    ```
-   ./.github/skills/obsidian-notes-skills/obsidian_api.sh POST /files/update \
-     --data '{"path":"<note-path>","append":"\n<text>"}'
+   ./.github/skills/obsidian-notes-skills/obsidian_api.sh POST "/vault/<url-encoded-note-path>" \
+     -H "Content-Type: text/plain" \
+     --data $'\n<text>'
+   ```
+   Example for `notes/meeting.md`:
+   ```
+   ./.github/skills/obsidian-notes-skills/obsidian_api.sh POST "/vault/notes/meeting.md" \
+     -H "Content-Type: text/plain" \
+     --data $'\n- Action: follow up'
    ```
 
 4. On success, confirm to the user:

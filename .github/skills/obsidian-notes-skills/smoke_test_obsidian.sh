@@ -8,11 +8,14 @@ if [ -z "${OBSIDIAN_API_TOKEN:-}" ]; then
   exit 2
 fi
 
+echo "Checking / status endpoint..."
+"$HELPER" GET / || { echo "GET / failed" >&2; exit 1; }
+
 echo "Checking /active/ endpoint..."
 "$HELPER" GET /active/ || { echo "GET /active/ failed" >&2; exit 1; }
 
 echo "Searching for term 'test'..."
-"$HELPER" GET /search --data-urlencode "q=test" || { echo "GET /search failed" >&2; exit 1; }
+"$HELPER" POST "/search/simple/?query=test" || { echo "POST /search/simple/ failed" >&2; exit 1; }
 
 # Dry-run of append (safe)
 if [ -x "$ROOT/append-note/run" ]; then

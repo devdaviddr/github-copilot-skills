@@ -12,9 +12,15 @@ When the user invokes this skill, follow this flow:
    > "OBSIDIAN_API_TOKEN is not set. Export it with: `export OBSIDIAN_API_TOKEN=<your_token>`"
    Then stop.
 
-3. Run the search using `obsidian_api.sh`:
+3. Run the search using `obsidian_api.sh`.
+   `POST /search/simple/?query=<query>` performs Obsidian's built-in full-text search.
+   URL-encode the query (spaces become `+` or `%20`):
    ```
-   ./.github/skills/obsidian-notes-skills/obsidian_api.sh GET /search --data-urlencode "q=<query>"
+   ./.github/skills/obsidian-notes-skills/obsidian_api.sh POST "/search/simple/?query=<url-encoded-query>"
+   ```
+   Example:
+   ```
+   ./.github/skills/obsidian-notes-skills/obsidian_api.sh POST "/search/simple/?query=meeting+notes"
    ```
 
 4. Parse the JSON array response and present results as a list:

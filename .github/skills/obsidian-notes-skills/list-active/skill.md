@@ -9,14 +9,22 @@ When the user invokes this skill, follow this flow:
    > "OBSIDIAN_API_TOKEN is not set. Export it with: `export OBSIDIAN_API_TOKEN=<your_token>`"
    Then stop.
 
-2. Run the active vault check using `obsidian_api.sh`:
+2. Run two checks using `obsidian_api.sh`:
+
+   **API status** — `GET /` returns JSON with plugin version and vault info:
    ```
-   ./.github/skills/obsidian-notes-skills/obsidian_api.sh GET /active/
+   ./.github/skills/obsidian-notes-skills/obsidian_api.sh GET /
    ```
 
-3. Parse the JSON response and report:
-   - **Vault name** — the `vault` field
-   - **Vault path** — the `path` field
+   **Active file** — `GET /active/` returns the raw markdown content of the currently open note
+   (the `Obsidian-Path` response header contains its vault-relative path):
+   ```
+   ./.github/skills/obsidian-notes-skills/obsidian_api.sh GET /active/ -D -
+   ```
+
+3. Parse the responses and report:
+   - **Plugin version** — from `versions.self` in the `GET /` JSON
+   - **Active note path** — from the `Obsidian-Path` response header of `GET /active/`
    - **Status** — confirm the API is reachable with "✅ Obsidian API is active."
 
 4. On error (connection refused, non-2xx), tell the user:

@@ -29,11 +29,20 @@ When the user invokes this skill, follow this flow:
    > "OBSIDIAN_API_TOKEN is not set. Export it with: `export OBSIDIAN_API_TOKEN=<your_token>`"
    Then stop.
 
-4. Run the create call using `obsidian_api.sh`:
+4. Run the create call using `obsidian_api.sh`.
+   `PUT /vault/{encoded-path}` creates or overwrites the note with the given markdown content:
    ```
-   ./.github/skills/obsidian-notes-skills/obsidian_api.sh POST /files \
-     --data '{"path":"<note-path>","content":"<escaped-content>"}'
+   ./.github/skills/obsidian-notes-skills/obsidian_api.sh PUT "/vault/<url-encoded-note-path>" \
+     -H "Content-Type: text/markdown" \
+     --data "<note-content>"
    ```
+   Example for `notes/new-idea.md`:
+   ```
+   ./.github/skills/obsidian-notes-skills/obsidian_api.sh PUT "/vault/notes/new-idea.md" \
+     -H "Content-Type: text/markdown" \
+     --data "# New Idea\n\nContent here."
+   ```
+   For multi-line content write it to a temp file and use `--data-binary @tmpfile`.
 
 5. On success, confirm to the user:
    > "Note created at `<note-path>`."
